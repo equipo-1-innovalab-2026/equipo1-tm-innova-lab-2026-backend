@@ -6,7 +6,29 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
+from .serializers import (
+    LoginRequestSerializer,
+    LoginResponseSerializer,
+    RegisterRequestSerializer,
+    RegisterResponseSerializer,
+    ProfileUpdateSerializer,
+    ProfileUpdateResponseSerializer,
+    UserDetailSerializer,
+    LogoutResponseSerializer
+)
+
+@extend_schema(
+    summary="Inicio de sesión de usuario",
+    description="Recibe credenciales de usuario, las valida y genera/retorna un Token de Django REST Framework junto con los datos del perfil y configuración del usuario.",
+    request=LoginRequestSerializer,
+    responses={
+        200: LoginResponseSerializer,
+        400: OpenApiResponse(description="Por favor, proporciona username y password, o usuario desactivado."),
+        401: OpenApiResponse(description="Credenciales inválidas.")
+    }
+)
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny]) 
@@ -69,6 +91,16 @@ def api_login(request):
         return Response({'error': 'Credenciales inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@extend_schema(
+    summary="Registro de usuario",
+    description="Recibe username, password, email y opcionalmente teléfono, avatar_url y opciones de accesibilidad. Crea el usuario y sus relaciones (UserProfile, UserConfig), y retorna un Token activo.",
+    request=RegisterRequestSerializer,
+    responses={
+        201: RegisterResponseSerializer,
+        400: OpenApiResponse(description="Por favor, proporciona username, password y email, o nombre de usuario / correo ya registrado."),
+        500: OpenApiResponse(description="Error al registrar el usuario.")
+    }
+)
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
@@ -158,6 +190,14 @@ def api_register(request):
         )
 
 
+@extend_schema(
+    summary="Cierre de sesión",
+    description="Requiere token de autenticación en cabecera y elimina dicho token de la base de datos para invalidar futuros accesos del mismo.",
+    responses={
+        200: LogoutResponseSerializer,
+        500: OpenApiResponse(description="Error al cerrar sesión.")
+    }
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_logout(request):
@@ -177,3 +217,96 @@ def api_logout(request):
         )
 
 
+@extend_schema(
+    methods=['GET'],
+    summary="Obtener perfil de usuario logueado",
+    description="Obtiene los datos detallados del usuario logueado, incluyendo su perfil y configuración.",
+    responses={200: UserDetailSerializer}
+)
+@extend_schema(
+    methods=['PUT', 'PATCH'],
+    summary="Actualizar perfil de usuario logueado",
+    description="Actualiza el perfil y configuración del usuario logueado (campos como email, teléfono, avatar o configuraciones de accesibilidad).",
+    request=ProfileUpdateSerializer,
+    responses={
+        200: ProfileUpdateResponseSerializer,
+        400: OpenApiResponse(description="Error en los campos enviados o conflicto de correo electrónico.")
+    }
+)
+@api_view(['GET', 'PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def api_profile(request):
+    """
+    Vista para ver o actualizar el perfil del usuario autenticado.
+    Soporta GET, PUT y PATCH. Requiere autenticación por Token.
+    """
+    user = request.user
+    profile = user.profile
+    config = user.config
+
+    if request.method == 'GET':
+        serializer = UserDetailSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+        # Validación parcial o completa según el método
+        serializer = ProfileUpdateSerializer(data=request.data, partial=(request.method == 'PATCH'))
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+
+        # Actualizar email del usuario si se proporciona
+        email = data.get('email')
+        if email is not None:
+            if email != user.email and User.objects.filter(email=email).exclude(id=user.id).exists():
+                return Response({'error': 'El correo electrónico ya está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+            user.email = email
+        user.save()
+
+        # Actualizar datos de perfil
+        phone = data.get('phone')
+        avatar_url = data.get('avatar_url')
+        if phone is not None:
+            profile.phone = phone
+        if avatar_url is not None:
+            profile.avatar_url = avatar_url
+        profile.save()
+
+        # Actualizar configuración de accesibilidad
+        font_size = data.get('font_size')
+        high_contrast = data.get('high_contrast')
+        voice_guidance = data.get('voice_guidance')
+
+        if font_size is not None:
+            config.font_size = font_size
+        if high_contrast is not None:
+            config.high_contrast = high_contrast
+        if voice_guidance is not None:
+            config.voice_guidance = voice_guidance
+        config.save()
+
+        # Respuesta con el perfil de usuario actualizado
+        response_serializer = UserDetailSerializer(user)
+        return Response({
+            'message': 'Perfil actualizado exitosamente',
+            'user': response_serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    summary="Listado de todos los usuarios",
+    description="Retorna una lista completa de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad.",
+    responses={200: UserDetailSerializer(many=True)}
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_users_list(request):
+    """
+    Vista que devuelve el listado de todos los usuarios registrados.
+    Requiere autenticación por Token.
+    """
+    # select_related optimiza la consulta evitando problemas N+1
+    users = User.objects.select_related('profile', 'config').all().order_by('id')
+    serializer = UserDetailSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
