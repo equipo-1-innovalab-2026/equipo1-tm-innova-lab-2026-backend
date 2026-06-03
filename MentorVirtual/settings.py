@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_spectacular',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -115,3 +119,38 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Configuración de Django REST Framework
+# Se definen las clases de autenticación y el esquema de generación de OpenAPI por defecto
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Generador de esquema de OpenAPI 3.0
+}
+
+# Configuración de drf-spectacular para Swagger / OpenAPI 3.0
+# Define la metadata de la API y el soporte de seguridad con Tokens de DRF en Swagger UI
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API de Mentor Virtual',
+    'DESCRIPTION': 'Documentación interactiva de la API del Mentor Virtual para el equipo de Frontend. Incluye flujos de registro, login y logout con autenticación por Token.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # Añadimos soporte para que Swagger UI reconozca y envíe cabeceras de Token en endpoints seguros
+    'SECURITY': [{
+        'TokenAuth': [],
+    }],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'TokenAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Authorization',
+                'description': 'Ingresa tu token en el formato: "Token <tu_key_aqui>"'
+            }
+        }
+    }
+}
+
+
