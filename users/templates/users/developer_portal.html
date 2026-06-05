@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Desarrolladores - Mentor Virtual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131b2e;
+            --glass-bg: rgba(30, 41, 59, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --color-primary: #6366f1;
+            --color-secondary: #06b6d4;
+            --color-accent: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--color-secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--color-secondary);
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-family: var(--font-title);
+            font-weight: 800;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff 30%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* Hub Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.35);
+            box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.25);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+        }
+
+        .icon-swagger {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .icon-redoc {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .card h2 {
+            font-family: var(--font-title);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.02em;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .card-action {
+            margin-top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: gap 0.2s ease;
+        }
+
+        .card:hover .card-action {
+            gap: 0.8rem;
+        }
+
+        .card-action svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        /* Document Reader section */
+        .doc-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            overflow: hidden;
+            animation: fadeInUp 1s ease;
+        }
+
+        .tab-bar {
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0 1rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-title);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-content {
+            padding: 2.5rem;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Markdown Rendering Styles */
+        .markdown-body {
+            color: #cbd5e1;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            font-family: var(--font-title);
+            color: var(--text-main);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .markdown-body h1 { font-size: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem; }
+        .markdown-body h2 { font-size: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.3rem; }
+        .markdown-body h3 { font-size: 1.25rem; }
+
+        .markdown-body p { margin-bottom: 1.2rem; }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 1.2rem;
+            padding-left: 2rem;
+        }
+
+        .markdown-body li { margin-bottom: 0.4rem; }
+
+        .markdown-body code {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f472b6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .markdown-body pre {
+            background: #090d16;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.2rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .markdown-body pre code {
+            background: none;
+            color: #e2e8f0;
+            padding: 0;
+            border-radius: 0;
+            font-size: 0.9rem;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .markdown-body th, .markdown-body td {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.8rem 1rem;
+            text-align: left;
+        }
+
+        .markdown-body th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .markdown-body tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Mermaid Graph Styles */
+        .mermaid {
+            background: #090d16;
+            padding: 2rem;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* GitHub alerts style */
+        .markdown-body blockquote {
+            border-left: 4px solid var(--color-primary);
+            background: rgba(99, 102, 241, 0.08);
+            padding: 1rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .markdown-body blockquote p {
+            margin-bottom: 0;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .tab-content { padding: 1.5rem; }
+            .tab-btn { padding: 1rem; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <span class="pulse-dot"></span>
+                <h1>Mentor Virtual DevPortal</h1>
+            </div>
+            <p>Ecosistema y documentación interactiva del backend de mentoría inteligente</p>
+        </header>
+
+        <section class="cards-grid">
+            <!-- Swagger UI Card -->
+            <a href="/api/schema/swagger-ui/" target="_blank" class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-swagger">▶</div>
+                    <h2>Swagger UI Sandbox</h2>
+                    <p>Consola interactiva en tiempo real. Prueba endpoints directamente desde el navegador, envía cabeceras de tokens seguros y valida flujos de respuesta.</p>
+                </div>
+                <div class="card-action">
+                    <span>Abrir Sandbox</span>
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <!-- ReDoc Card -->
+            <a href="/api/schema/redoc/" target="_blank" class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-redoc">📖</div>
+                    <h2>ReDoc API Spec</h2>
+                    <p>Documentación con navegación lateral premium de tres columnas. Ideal para lectura técnica fluida, formatos de especificación de esquemas y contratos API.</p>
+                </div>
+                <div class="card-action">
+                    <span>Ver Documentación</span>
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+        </section>
+
+        <!-- Dynamic Document Reader -->
+        <section class="doc-section">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab(event, 'endpoints-tab')">Guía de Endpoints (API)</button>
+                <button class="tab-btn" onclick="switchTab(event, 'data-dict-tab')">Diccionario de Datos (BD)</button>
+            </div>
+
+            <!-- Tab Content: Endpoints Guide -->
+            <div id="endpoints-tab" class="tab-content active">
+                <div id="endpoints-markdown" class="markdown-body">
+                    <p style="color:var(--text-muted)">Cargando documentación...</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Data Dictionary -->
+            <div id="data-dict-tab" class="tab-content">
+                <div id="data-dict-markdown" class="markdown-body">
+                    <p style="color:var(--text-muted)">Cargando diccionario de datos...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Hidden Raw Markdown Data -->
+    <script id="endpoints-raw" type="text/markdown">{{ endpoints_markdown|safe }}</script>
+    <script id="data-dict-raw" type="text/markdown">{{ data_dict_markdown|safe }}</script>
+
+    <script>
+        // Init Mermaid
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: 'dark',
+            themeVariables: {
+                background: '#090d16',
+                primaryColor: '#6366f1',
+                lineColor: '#06b6d4',
+                textColor: '#f8fafc'
+            }
+        });
+
+        // Setup markdown compilation options
+        marked.setOptions({
+            gfm: true,
+            breaks: true
+        });
+
+        // Render Markdown content
+        function renderMarkdown() {
+            const endpointsMd = document.getElementById('endpoints-raw').textContent;
+            const dataDictMd = document.getElementById('data-dict-raw').textContent;
+
+            // Render Endpoints
+            document.getElementById('endpoints-markdown').innerHTML = marked.parse(endpointsMd);
+
+            // Render Data Dictionary
+            document.getElementById('data-dict-markdown').innerHTML = marked.parse(dataDictMd);
+
+            // Process Mermaid inside Markdown
+            document.querySelectorAll('#data-dict-markdown pre code.language-mermaid').forEach((codeBlock) => {
+                const pre = codeBlock.parentNode;
+                const div = document.createElement('div');
+                div.className = 'mermaid';
+                div.textContent = codeBlock.textContent;
+                pre.parentNode.replaceChild(div, pre);
+            });
+
+            // Initialize Mermaid graphs
+            mermaid.run().catch(err => console.log('Mermaid error:', err));
+        }
+
+        // Tab Switching Logic
+        function switchTab(evt, tabId) {
+            // Hide all contents
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Deactivate all buttons
+            const tabButtons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            // Show active content and set button active
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMarkdown();
+        });
+    </script>
+</body>
+</html>

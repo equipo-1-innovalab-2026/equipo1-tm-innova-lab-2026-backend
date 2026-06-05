@@ -21,9 +21,11 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from users.views_docs import developer_portal
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/docs/', developer_portal, name='developer_portal'),
     
     # Ruta de la API de usuarios
     path('api/', include('users.urls')), 
