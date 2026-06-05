@@ -28,7 +28,7 @@ El **Mentor Virtual** está diseñado para ofrecer mentoría y guía inteligente
 > [!NOTE]
 > Esta sección permite a otros agentes de IA (como Antigravity, GitHub Copilot, etc.) entender rápidamente la lógica y decisiones del proyecto.
 
-- **Doble Configuración de Base de Datos**: En [settings.py](file:///c:/Users/USUARIO/Desktop/mentor_virtual_backend/MentorVirtual/settings.py), la base de datos se configura dinámicamente. Si existe la variable de entorno `DATABASE_URL`, el sistema se conecta a **PostgreSQL** (usado dentro de Docker). Si no está definida, hace fallback a **SQLite3** local (`db.sqlite3`).
+- **Doble Configuración de Base de Datos**: En [settings.py](MentorVirtual/settings.py), la base de datos se configura dinámicamente. Si existe la variable de entorno `DATABASE_URL`, el sistema se conecta a **PostgreSQL** (usado dentro de Docker). Si no está definida, hace fallback a **SQLite3** local (`db.sqlite3`).
 - **Señales de Django**: Al crear un nuevo usuario (`User`), se disparan automáticamente señales (`post_save`) que crean y asocian su perfil (`UserProfile`) y su configuración (`UserConfig`). No es necesario crearlos manualmente en las vistas de registro.
 - **Autenticación**: Se utiliza `rest_framework.authtoken`. El token se envía en la cabecera HTTP como `Authorization: Token <tu_token>`.
 
@@ -78,5 +78,5 @@ Abre tu navegador e ingresa a:
 - `/users`: Aplicación de Django que maneja el registro, autenticación, perfiles y configuraciones de accesibilidad.
 - `/mentor`: Aplicación dedicada a la lógica futura de mentorías.
 - `/docs`: Documentación detallada del proyecto.
-  - [Endpoints de la API](file:///c:/Users/USUARIO/Desktop/mentor_virtual_backend/docs/endpoints_guide.md)
-  - [Diccionario de Datos](file:///c:/Users/USUARIO/Desktop/mentor_virtual_backend/docs/data_dictionary.md)
+  - [Endpoints de la API](docs/endpoints_guide.md)
+  - [Diccionario de Datos](docs/data_dictionary.md)
