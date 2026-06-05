@@ -72,6 +72,7 @@ docker compose exec web python manage.py createsuperuser
 
 ### 5. Verificar que el Sistema esté Corriendo
 Abre tu navegador e ingresa a:
+- **Developer Portal**: [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/) (Portal centralizado con la documentación interactiva, Swagger, ReDoc y el Diccionario de Datos).
 - **Swagger UI**: [http://localhost:8000/api/schema/swagger-ui/](http://localhost:8000/api/schema/swagger-ui/)
 - **ReDoc**: [http://localhost:8000/api/schema/redoc/](http://localhost:8000/api/schema/redoc/)
 - **Panel de Administración**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
