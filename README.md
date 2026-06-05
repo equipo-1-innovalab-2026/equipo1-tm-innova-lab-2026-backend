@@ -6,31 +6,37 @@ Este repositorio contiene la API REST y el sistema de base de datos para la plat
 
 ## 🎯 Visión y Objetivos del Proyecto
 
-El **Mentor Virtual** está diseñado para ofrecer mentoría y guía inteligente a usuarios, con un fuerte enfoque en la **inclusión y accesibilidad**. Apuntamos a:
-1. **Accesibilidad Universal**: Permitir que personas con distintas capacidades utilicen la plataforma ajustando tamaños de fuente, contrastes elevados y guía de voz de manera persistente.
-2. **Seguridad y Escalabilidad**: Implementar autenticación robusta mediante tokens y dejar sentadas las bases para validaciones avanzadas (como hashing biométrico facial).
-3. **Integración Sencilla**: Ofrecer una documentación interactiva completa de la API (OpenAPI 3.0) para simplificar la integración del equipo de Frontend.
+El **Mentor Virtual** es una aplicación diseñada para apoyar a adultos con dificultades para mantener hábitos de estudio, abordando problemas comunes como la frustración, la baja confianza y la falta de acompañamiento. Su objetivo principal es reducir el abandono educativo mediante una experiencia de aprendizaje positiva, motivadora y estructurada.
+
+### 💡 Propuesta de Valor
+La app no se limita a impartir clases, sino que se enfoca en la constancia mediante:
+- **Mentoría diaria:** Interacción con un avatar que brinda motivación, feedback y seguimiento.
+- **Gamificación y hábitos:** Desafíos breves, registro de rachas y un sistema de logros para reforzar el compromiso.
+- **Contenido personalizado:** Feed de videos cortos adaptados a los intereses del usuario.
+
+### 📋 Requisitos del MVP
+- **Funcionalidades del MVP:** Registro de usuario, feed de videos funcional, mentor virtual básico (mensajes de texto), desafíos estáticos y visualización de progreso/logros.
+- **Enfoque Tecnológico:**
+  - **Frontend:** React/React Native para plataformas web y móviles.
+  - **Backend (Este repositorio):** Desarrollado en Django y Django REST Framework, proporcionando autenticación de usuarios mediante tokens y perfiles de accesibilidad optimizados.
+  - **Base de Datos:** PostgreSQL en contenedores Docker y SQLite3 local como base de datos de respaldo.
+
+### 📅 Plan de Trabajo (12 semanas)
+El proyecto se organiza en 6 Sprints de desarrollo:
+- **Sprints 1-2 (Exploración e Ideación):** Definición de usuarios, flujo de navegación, wireframes y prototipos navegables.
+- **Sprints 3-4 (Desarrollo):** Implementación de autenticación, feed de videos, desafíos, logros y lógica del mentor virtual.
+- **Sprint 5 (Iteración):** Mejora de la experiencia de usuario (UX), optimización de lógica y validación de estabilidad.
+- **Sprint 6 (Cierre):** Despliegue en producción y preparación para el Demo Day.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
-
+## 🛠️ Tecnologías del Backend
+Este backend está construido sobre las siguientes tecnologías:
 - **Core**: Python 3.12, Django 5.0+ / 6.0+
 - **REST API**: Django REST Framework (DRF)
 - **Documentación Interactiva**: `drf-spectacular` (Swagger UI & ReDoc)
 - **Base de Datos**: PostgreSQL 15 (en Docker) y SQLite3 (fallback local)
 - **Contenedores**: Docker & Docker Compose
-
----
-
-## 💾 Contexto de Memoria para Agentes de IA
-
-> [!NOTE]
-> Esta sección permite a otros agentes de IA (como Antigravity, GitHub Copilot, etc.) entender rápidamente la lógica y decisiones del proyecto.
-
-- **Doble Configuración de Base de Datos**: En [settings.py](MentorVirtual/settings.py), la base de datos se configura dinámicamente. Si existe la variable de entorno `DATABASE_URL`, el sistema se conecta a **PostgreSQL** (usado dentro de Docker). Si no está definida, hace fallback a **SQLite3** local (`db.sqlite3`).
-- **Señales de Django**: Al crear un nuevo usuario (`User`), se disparan automáticamente señales (`post_save`) que crean y asocian su perfil (`UserProfile`) y su configuración (`UserConfig`). No es necesario crearlos manualmente en las vistas de registro.
-- **Autenticación**: Se utiliza `rest_framework.authtoken`. El token se envía en la cabecera HTTP como `Authorization: Token <tu_token>`.
 
 ---
 
