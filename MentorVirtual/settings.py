@@ -152,7 +152,25 @@ REST_FRAMEWORK = {
 # Define la metadata de la API y el soporte de seguridad con Tokens de DRF en Swagger UI
 SPECTACULAR_SETTINGS = {
     'TITLE': 'API de Mentor Virtual',
-    'DESCRIPTION': 'Documentación interactiva de la API del Mentor Virtual para el equipo de Frontend. Incluye flujos de registro, login y logout con autenticación por Token.',
+    'DESCRIPTION': (
+        'Documentación interactiva de la API del Mentor Virtual para el equipo de Frontend. '
+        'Incluye flujos de registro, login y logout con autenticación por Token.\n\n'
+        '### 🗃️ Diccionario de Datos / Modelos de Base de Datos\n'
+        'A continuación se detallan las tablas principales del sistema y su relación:\n\n'
+        '- **auth_user (User)**: Cuentas de usuario.\n'
+        '  - `id` (int, PK): Identificador único.\n'
+        '  - `username` (varchar, Único): Nombre de usuario.\n'
+        '  - `email` (varchar, Único): Correo electrónico.\n'
+        '  - `is_active` (bool): Estado de cuenta.\n\n'
+        '- **users_userprofile (UserProfile)**: Perfil complementario (Relación 1:1 con `User`).\n'
+        '  - `phone` (varchar): Número telefónico.\n'
+        '  - `avatar_url` (varchar): URL de foto de perfil.\n\n'
+        '- **users_userconfig (UserConfig)**: Accesibilidad (Relación 1:1 con `User`).\n'
+        '  - `font_size` (varchar, opciones: `SMALL`, `MEDIUM`, `LARGE`): Tamaño de letra.\n'
+        '  - `high_contrast` (bool): Contraste de colores elevado.\n'
+        '  - `voice_guidance` (bool): Guía por voz asistida.\n\n'
+        'Los modelos detallados también se describen en la sección "Schemas" al final de esta página.'
+    ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # Añadimos soporte para que Swagger UI reconozca y envíe cabeceras de Token en endpoints seguros
