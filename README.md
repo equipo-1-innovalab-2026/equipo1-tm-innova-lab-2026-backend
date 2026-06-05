@@ -77,6 +77,6 @@ Abre tu navegador e ingresa a:
 - `/MentorVirtual`: Configuración global de Django (settings, urls, wsgi).
 - `/users`: Aplicación de Django que maneja el registro, autenticación, perfiles y configuraciones de accesibilidad.
 - `/mentor`: Aplicación dedicada a la lógica futura de mentorías.
-- `/docs`: Documentación detallada del proyecto.
-  - [Endpoints de la API](docs/endpoints_guide.md)
-  - [Diccionario de Datos](docs/data_dictionary.md)
+- `/documentacion`: Documentación detallada del proyecto.
+  - [Endpoints de la API](documentacion/endpoints_guide.md)
+  - [Diccionario de Datos](documentacion/data_dictionary.md)
