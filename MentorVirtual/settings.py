@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_spectacular',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -72,12 +76,30 @@ WSGI_APPLICATION = 'MentorVirtual.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import os
+from urllib.parse import urlparse
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    url = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path[1:],
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or 5432,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 
 # Password validation
@@ -115,3 +137,38 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Configuración de Django REST Framework
+# Se definen las clases de autenticación y el esquema de generación de OpenAPI por defecto
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Generador de esquema de OpenAPI 3.0
+}
+
+# Configuración de drf-spectacular para Swagger / OpenAPI 3.0
+# Define la metadata de la API y el soporte de seguridad con Tokens de DRF en Swagger UI
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API de Mentor Virtual',
+    'DESCRIPTION': 'Documentación interactiva de la API del Mentor Virtual para el equipo de Frontend. Incluye flujos de registro, login y logout con autenticación por Token.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # Añadimos soporte para que Swagger UI reconozca y envíe cabeceras de Token en endpoints seguros
+    'SECURITY': [{
+        'TokenAuth': [],
+    }],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'TokenAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Authorization',
+                'description': 'Ingresa tu token en el formato: "Token <tu_key_aqui>"'
+            }
+        }
+    }
+}
+
+
