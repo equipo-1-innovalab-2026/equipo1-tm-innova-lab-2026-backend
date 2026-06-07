@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 from .serializers import (
     LoginRequestSerializer,
@@ -21,12 +21,39 @@ from .serializers import (
 
 @extend_schema(
     summary="Inicio de sesión de usuario",
-    description="Recibe credenciales de usuario, las valida y genera/retorna un Token de Django REST Framework junto con los datos del perfil y configuración del usuario.",
+    description="Recibe credenciales de usuario (email y password), las valida y genera/retorna un Token de Django REST Framework junto con los datos del perfil y configuración del usuario.",
     request=LoginRequestSerializer,
     responses={
         200: LoginResponseSerializer,
-        400: OpenApiResponse(description="Por favor, proporciona username y password, o usuario desactivado."),
-        401: OpenApiResponse(description="Credenciales inválidas.")
+        400: OpenApiResponse(
+            description="Error de validación (campos vacíos, formato inválido) o credenciales incorrectas.",
+            examples=[
+                OpenApiExample(
+                    name="Campo email vacío",
+                    value={"email": ["El email es un campo obligatorio."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Campo password vacío",
+                    value={"password": ["El password es un campo obligatorio."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Credenciales incorrectas",
+                    value={"error": "Credenciales inválidas."},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Usuario desactivado",
+                    value={"error": "Este usuario está desactivado."},
+                    response_only=True,
+                    status_codes=["400"]
+                )
+            ]
+        )
     }
 )
 @api_view(['POST'])
@@ -35,21 +62,26 @@ from .serializers import (
 def api_login(request):
     """
     Vista de inicio de sesión.
-    Recibe credenciales de usuario, las valida y genera/retorna un Token de Django REST Framework
+    Recibe email y password, valida a través del serializer y retorna un Token de DRF
     junto con los datos del perfil y configuración del usuario.
     """
-    username = request.data.get('username')
-    password = request.data.get('password')
+    serializer = LoginRequestSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Validación de datos requeridos
-    if not username or not password:
-        return Response(
-            {'error': 'Por favor, proporciona username y password.'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    email = serializer.validated_data.get('email')
+    password = serializer.validated_data.get('password')
 
-    # Proceso de autenticación
-    user = authenticate(username=username, password=password)
+    # Comentario en español: Obtener el username a partir del email para poder usar la autenticación nativa de Django
+    try:
+        user_obj = User.objects.get(email=email)
+        username = user_obj.username
+    except User.DoesNotExist:
+        username = None
+
+    user = None
+    if username:
+        user = authenticate(username=username, password=password)
 
     if user is not None:
         if user.is_active:
@@ -87,17 +119,51 @@ def api_login(request):
         else:
             return Response({'error': 'Este usuario está desactivado.'}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        # Credenciales incorrectas
-        return Response({'error': 'Credenciales inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Credenciales incorrectas o inexistentes
+        return Response({'error': 'Credenciales inválidas.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
     summary="Registro de usuario",
-    description="Recibe username, password, email y opcionalmente teléfono, avatar_url y opciones de accesibilidad. Crea el usuario y sus relaciones (UserProfile, UserConfig), y retorna un Token activo.",
+    description="Recibe username, password, password_confirm, email y opcionalmente teléfono, avatar_url y opciones de accesibilidad. Crea el usuario y sus relaciones (UserProfile, UserConfig), y retorna un Token activo.",
     request=RegisterRequestSerializer,
     responses={
         201: RegisterResponseSerializer,
-        400: OpenApiResponse(description="Por favor, proporciona username, password y email, o nombre de usuario / correo ya registrado."),
+        400: OpenApiResponse(
+            description="Errores de validación en los campos enviados (vacíos, contraseñas no coincidentes, contraseña débil, email duplicado o nombre de usuario existente).",
+            examples=[
+                OpenApiExample(
+                    name="Contraseña débil (OWASP)",
+                    value={"password": ["La contraseña debe contener un mínimo de 8 caracteres, una mayúscula y un número."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Contraseñas no coinciden",
+                    value={"password_confirm": ["Las contraseñas ingresadas no coinciden."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Email duplicado",
+                    value={"email": ["Este correo electrónico ya se encuentra registrado."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Nombre de usuario duplicado",
+                    value={"username": ["El nombre de usuario ya está registrado."]},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Campo requerido vacío",
+                    value={"username": ["El username es un campo obligatorio."]},
+                    response_only=True,
+                    status_codes=["400"]
+                )
+            ]
+        ),
         500: OpenApiResponse(description="Error al registrar el usuario.")
     }
 )
@@ -107,62 +173,47 @@ def api_login(request):
 def api_register(request):
     """
     Vista de registro de usuario.
-    Recibe username, password, email y opcionalmente teléfono, avatar_url y opciones de accesibilidad.
-    Crea el usuario y sus relaciones (UserProfile, UserConfig), y retorna un Token activo.
+    Recibe username, password, password_confirm, email y opcionalmente teléfono, avatar_url y opciones de accesibilidad.
+    Valida la petición a través del serializer y crea el usuario con su perfil y configuración. Retorna un Token de DRF activo.
     """
-    username = request.data.get('username')
-    password = request.data.get('password')
-    email = request.data.get('email')
+    serializer = RegisterRequestSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    data = serializer.validated_data
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
     
     # Parámetros opcionales del perfil y configuración
-    phone = request.data.get('phone', '')
-    avatar_url = request.data.get('avatar_url', '')
-    font_size = request.data.get('font_size', 'MEDIUM')
-    high_contrast = request.data.get('high_contrast', False)
-    voice_guidance = request.data.get('voice_guidance', False)
-    
-    # Validación de campos requeridos
-    if not username or not password or not email:
-        return Response(
-            {'error': 'Por favor, proporciona username, password y email.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-        
-    # Verificar si el usuario ya existe
-    if User.objects.filter(username=username).exists():
-        return Response(
-            {'error': 'El nombre de usuario ya está registrado.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-        
-    if User.objects.filter(email=email).exists():
-        return Response(
-            {'error': 'El correo electrónico ya está registrado.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    phone = data.get('phone', '')
+    avatar_url = data.get('avatar_url', '')
+    font_size = data.get('font_size', 'MEDIUM')
+    high_contrast = data.get('high_contrast', False)
+    voice_guidance = data.get('voice_guidance', False)
         
     try:
-        # Creación del usuario con la contraseña cifrada
+        # Comentario en español: Creación del usuario con la contraseña cifrada
         user = User.objects.create(
             username=username,
             email=email,
             password=make_password(password)
         )
         
-        # Recuperar y actualizar el perfil creado automáticamente por la señal de Django
+        # Comentario en español: Recuperar y actualizar el perfil creado automáticamente por la señal de Django
         profile = user.profile
         profile.phone = phone
         profile.avatar_url = avatar_url
         profile.save()
         
-        # Recuperar y actualizar la configuración creada automáticamente por la señal de Django
+        # Comentario en español: Recuperar y actualizar la configuración creada automáticamente por la señal de Django
         config = user.config
         config.font_size = font_size
         config.high_contrast = high_contrast
         config.voice_guidance = voice_guidance
         config.save()
         
-        # Generar Token de autenticación de DRF para el nuevo usuario
+        # Comentario en español: Generar Token de autenticación de DRF para el nuevo usuario
         token, created = Token.objects.get_or_create(user=user)
         
         # Respuesta exitosa con el token del usuario recién registrado
