@@ -30,7 +30,8 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_register')
         data = {
             'username': 'newuser',
-            'password': 'newpassword123',
+            'password': 'Newpassword123',
+            'password_confirm': 'Newpassword123',
             'email': 'newuser@example.com',
             'phone': '987654321',
             'avatar_url': 'http://example.com/new_avatar.jpg',
@@ -46,10 +47,56 @@ class UserEndpointsTestCase(APITestCase):
         self.assertEqual(response.data['user']['config']['font_size'], 'LARGE')
         self.assertTrue(response.data['user']['config']['high_contrast'])
 
+    def test_api_register_password_mismatch(self):
+        url = reverse('api_register')
+        data = {
+            'username': 'newuser',
+            'password': 'Newpassword123',
+            'password_confirm': 'Differentpassword123',
+            'email': 'newuser@example.com'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['password_confirm'], ['Las contraseñas ingresadas no coinciden.'])
+
+    def test_api_register_weak_password(self):
+        url = reverse('api_register')
+        data = {
+            'username': 'newuser',
+            'password': 'weak',
+            'password_confirm': 'weak',
+            'email': 'newuser@example.com'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['password'], ['La contraseña debe contener un mínimo de 8 caracteres, una mayúscula y un número.'])
+
+    def test_api_register_duplicate_email(self):
+        url = reverse('api_register')
+        data = {
+            'username': 'newuser',
+            'password': 'Newpassword123',
+            'password_confirm': 'Newpassword123',
+            'email': 'testuser@example.com'  # Ya registrado en setUp
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['email'], ['Este correo electrónico ya se encuentra registrado.'])
+
+    def test_api_register_missing_fields(self):
+        url = reverse('api_register')
+        data = {}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['username'], ['El username es un campo obligatorio.'])
+        self.assertEqual(response.data['email'], ['El email es un campo obligatorio.'])
+        self.assertEqual(response.data['password'], ['El password es un campo obligatorio.'])
+        self.assertEqual(response.data['password_confirm'], ['El password_confirm es un campo obligatorio.'])
+
     def test_api_login_success(self):
         url = reverse('api_login')
         data = {
-            'username': 'testuser',
+            'email': 'testuser@example.com',
             'password': 'testpassword123'
         }
         response = self.client.post(url, data, format='json')
@@ -60,11 +107,20 @@ class UserEndpointsTestCase(APITestCase):
     def test_api_login_invalid_credentials(self):
         url = reverse('api_login')
         data = {
-            'username': 'testuser',
+            'email': 'testuser@example.com',
             'password': 'wrongpassword'
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Credenciales inválidas.')
+
+    def test_api_login_missing_fields(self):
+        url = reverse('api_login')
+        data = {}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['email'], ['El email es un campo obligatorio.'])
+        self.assertEqual(response.data['password'], ['El password es un campo obligatorio.'])
 
     def test_api_profile_unauthorized(self):
         url = reverse('api_profile')
