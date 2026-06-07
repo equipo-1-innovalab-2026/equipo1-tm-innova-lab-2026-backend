@@ -33,13 +33,22 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'phone', 'avatar_url', 'config']
 
 class LoginRequestSerializer(serializers.Serializer):
-    username = serializers.CharField(
+    email = serializers.EmailField(
         required=True,
-        help_text="Nombre de usuario de la cuenta."
+        error_messages={
+            'required': 'El email es un campo obligatorio.',
+            'blank': 'El email es un campo obligatorio.',
+            'invalid': 'Introduzca una dirección de correo electrónico válida.'
+        },
+        help_text="Dirección de correo electrónico asociada a la cuenta."
     )
     password = serializers.CharField(
         required=True, 
         write_only=True,
+        error_messages={
+            'required': 'El password es un campo obligatorio.',
+            'blank': 'El password es un campo obligatorio.'
+        },
         help_text="Contraseña correspondiente de la cuenta."
     )
 
@@ -57,16 +66,38 @@ class LoginResponseSerializer(serializers.Serializer):
 class RegisterRequestSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
+        error_messages={
+            'required': 'El username es un campo obligatorio.',
+            'blank': 'El username es un campo obligatorio.'
+        },
         help_text="Nombre de usuario único para la nueva cuenta."
+    )
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            'required': 'El email es un campo obligatorio.',
+            'blank': 'El email es un campo obligatorio.',
+            'invalid': 'Introduzca una dirección de correo electrónico válida.'
+        },
+        help_text="Dirección de correo electrónico única."
     )
     password = serializers.CharField(
         required=True, 
         write_only=True,
+        error_messages={
+            'required': 'El password es un campo obligatorio.',
+            'blank': 'El password es un campo obligatorio.'
+        },
         help_text="Contraseña para la nueva cuenta (se cifrará antes de almacenar)."
     )
-    email = serializers.EmailField(
+    password_confirm = serializers.CharField(
         required=True,
-        help_text="Dirección de correo electrónico única."
+        write_only=True,
+        error_messages={
+            'required': 'El password_confirm es un campo obligatorio.',
+            'blank': 'El password_confirm es un campo obligatorio.'
+        },
+        help_text="Confirmación de la contraseña (debe coincidir con password)."
     )
     phone = serializers.CharField(
         required=False, 
@@ -96,6 +127,41 @@ class RegisterRequestSerializer(serializers.Serializer):
         default=False,
         help_text="Indica si activa la asistencia auditiva por voz (opcional, default: false)."
     )
+
+    def validate(self, data):
+        # Comentario en español: Validar que las contraseñas coincidan
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+
+        if password != password_confirm:
+            raise serializers.ValidationError({
+                'password_confirm': ['Las contraseñas ingresadas no coinciden.']
+            })
+
+        # Comentario en español: Validar complejidad de la contraseña (OWASP)
+        # Mínimo 8 caracteres, al menos una mayúscula y al menos un número
+        if (len(password) < 8 or 
+                not any(c.isupper() for c in password) or 
+                not any(c.isdigit() for c in password)):
+            raise serializers.ValidationError({
+                'password': ['La contraseña debe contener un mínimo de 8 caracteres, una mayúscula y un número.']
+            })
+
+        # Comentario en español: Validar la unicidad de email contra la base de datos
+        email = data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({
+                'email': ['Este correo electrónico ya se encuentra registrado.']
+            })
+
+        # Comentario en español: Validar también la unicidad del username
+        username = data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError({
+                'username': ['El nombre de usuario ya está registrado.']
+            })
+
+        return data
 
 class RegisterResponseSerializer(serializers.Serializer):
     message = serializers.CharField(
