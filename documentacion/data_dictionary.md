@@ -54,9 +54,9 @@ Almacena la información de autenticación y datos básicos del usuario. Provist
 | Campo | Tipo de Datos | Nulo | Restricciones / Valor por Defecto | Descripción |
 | :--- | :--- | :---: | :---: | :--- |
 | `id` | Integer | No | PK, Auto-incremental | Identificador único del usuario. |
-| `username` | Varchar(150) | No | Único, Requerido | Nombre de usuario para login. |
-| `password` | Varchar(128) | No | Requerido | Hash de la contraseña. |
-| `email` | Varchar(254) | No | Requerido | Dirección de correo electrónico. |
+| `username` | Varchar(150) | No | Único, Requerido | Nombre de usuario único para la cuenta. |
+| `password` | Varchar(128) | No | Requerido | Hash de la contraseña (cifrado con PBKDF2). |
+| `email` | Varchar(254) | No | Único, Requerido | Dirección de correo electrónico única (utilizada para iniciar sesión). |
 | `is_active` | Boolean | No | Default: `True` | Estado de la cuenta (activo/inactivo). |
 | `is_staff` | Boolean | No | Default: `False` | Indica si el usuario puede acceder al panel admin. |
 | `date_joined`| DateTime | No | Auto-creado | Fecha y hora de creación de la cuenta. |

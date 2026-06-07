@@ -26,7 +26,8 @@ Permite a nuevos usuarios registrarse en la plataforma, creando su perfil y sus 
   ```json
   {
     "username": "usuario_ejemplo",
-    "password": "mi_password_segura",
+    "password": "MiPasswordSegura1",
+    "password_confirm": "MiPasswordSegura1",
     "email": "ejemplo@correo.com",
     "phone": "+56912345678",        // Opcional
     "avatar_url": "https://url.com/img.png", // Opcional
@@ -54,6 +55,31 @@ Permite a nuevos usuarios registrarse en la plataforma, creando su perfil y sus 
     }
   }
   ```
+- **Respuestas de Error Frecuentes (400 Bad Request)**:
+  - *Contraseña débil:*
+    ```json
+    {
+      "password": ["La contraseña debe contener un mínimo de 8 caracteres, una mayúscula y un número."]
+    }
+    ```
+  - *Contraseñas no coinciden:*
+    ```json
+    {
+      "password_confirm": ["Las contraseñas ingresadas no coinciden."]
+    }
+    ```
+  - *Email duplicado:*
+    ```json
+    {
+      "email": ["Este correo electrónico ya se encuentra registrado."]
+    }
+    ```
+  - *Campos obligatorios vacíos:*
+    ```json
+    {
+      "username": ["El username es un campo obligatorio."]
+    }
+    ```
 
 ---
 
@@ -66,8 +92,8 @@ Valida las credenciales y devuelve un token activo junto con la información del
 - **Cuerpo de la Petición (JSON)**:
   ```json
   {
-    "username": "usuario_ejemplo",
-    "password": "mi_password_segura"
+    "email": "ejemplo@correo.com",
+    "password": "MiPasswordSegura1"
   }
   ```
 - **Respuesta Exitosa (200 OK)**:
@@ -89,6 +115,19 @@ Valida las credenciales y devuelve un token activo junto con la información del
     }
   }
   ```
+- **Respuestas de Error Frecuentes (400 Bad Request)**:
+  - *Credenciales incorrectas:*
+    ```json
+    {
+      "error": "Credenciales inválidas."
+    }
+    ```
+  - *Campos obligatorios vacíos:*
+    ```json
+    {
+      "email": ["El email es un campo obligatorio."]
+    }
+    ```
 
 ---
 
