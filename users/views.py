@@ -6,7 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
+from rest_framework.pagination import PageNumberPagination #para implementar paginación
+
 
 from .serializers import (
     LoginRequestSerializer,
@@ -345,19 +347,55 @@ def api_profile(request):
         }, status=status.HTTP_200_OK)
 
 
+# @extend_schema(
+#     summary="Listado de todos los usuarios",
+#     description="Retorna una lista completa de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad.",
+#     responses={200: UserDetailSerializer(many=True)}
+# )
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def api_users_list(request):
+#     """
+#     Vista que devuelve el listado de todos los usuarios registrados.
+#     Requiere autenticación por Token.
+#     """
+#     # select_related optimiza la consulta evitando problemas N+1
+#     users = User.objects.select_related('profile', 'config').all().order_by('id')
+#     serializer = UserDetailSerializer(users, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
 @extend_schema(
     summary="Listado de todos los usuarios",
-    description="Retorna una lista completa de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad.",
+    description="Retorna una lista paginada de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad. Devuelve 10 registros por página",
+    parameters=[
+        OpenApiParameter(
+            name='page', 
+            type=int, 
+            location=OpenApiParameter.QUERY, 
+            description='Número de página a recuperar (por defecto es la 1).'
+        ),
+    ],
     responses={200: UserDetailSerializer(many=True)}
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_users_list(request):
     """
-    Vista que devuelve el listado de todos los usuarios registrados.
+    Vista que devuelve el listado de todos los usuarios registrados con paginación.
     Requiere autenticación por Token.
     """
-    # select_related optimiza la consulta evitando problemas N+1
+    # Traemos la query optimizada de la base de datos
     users = User.objects.select_related('profile', 'config').all().order_by('id')
-    serializer = UserDetailSerializer(users, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # Instanciamos y configuramos el paginador a mano
+    paginator = PageNumberPagination()
+    paginator.page_size = 10  # Podés cambiar el 10 por el tamaño de página que prefieras
+    
+    #  Paginamos el QuerySet pasando el request
+    paginated_users = paginator.paginate_queryset(users, request)
+    
+    # Serializamos únicamente los datos de la página actual
+    serializer = UserDetailSerializer(paginated_users, many=True)
+    
+    # Retornamos la respuesta con la estructura nativa de paginación de DRF (count, next, previous, results)
+    return paginator.get_paginated_response(serializer.data)
