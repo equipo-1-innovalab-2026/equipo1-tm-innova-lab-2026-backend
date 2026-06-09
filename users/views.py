@@ -4,11 +4,10 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter, inline_serializer
 from rest_framework.pagination import PageNumberPagination #para implementar paginación
-from rest_framework.decorators import api_view, permission_classes, authentication_classes # para obtener el profile correcto
 from rest_framework.authentication import TokenAuthentication  # para obtener el profile correcto
 
 
@@ -371,15 +370,17 @@ def api_profile(request):
 @extend_schema(
     summary="Listado de todos los usuarios",
     description="Retorna una lista paginada de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad. Devuelve 10 registros por página",
-    parameters=[
-        OpenApiParameter(
-            name='page', 
-            type=int, 
-            location=OpenApiParameter.QUERY, 
-            description='Número de página a recuperar (por defecto es la 1).'
-        ),
-    ],
-    responses={200: UserDetailSerializer(many=True)}
+    responses={
+        200: inline_serializer(
+            name='PaginatedUserList',
+            fields={
+                'count': serializers.IntegerField(help_text='Total number of users'),
+                'next': serializers.URLField(allow_null=True, help_text='URL of the next page of users'),
+                'previous': serializers.URLField(allow_null=True, help_text='URL of the previous page of users'),
+                'results': UserDetailSerializer(many=True)
+            }
+        )
+    }
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
