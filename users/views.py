@@ -8,6 +8,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter
 from rest_framework.pagination import PageNumberPagination #para implementar paginación
+from rest_framework.decorators import api_view, permission_classes, authentication_classes # para obtener el profile correcto
+from rest_framework.authentication import TokenAuthentication  # para obtener el profile correcto
+
 
 
 from .serializers import (
@@ -287,6 +290,7 @@ def api_logout(request):
     }
 )
 @api_view(['GET', 'PUT', 'PATCH'])
+@authentication_classes([TokenAuthentication]) # Corrección: Fuerza el uso de TokenAuthentication para que request.user detecte al usuario logueado en Swagger
 @permission_classes([IsAuthenticated])
 def api_profile(request):
     """
