@@ -4,9 +4,13 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample, OpenApiParameter, inline_serializer
+from rest_framework.pagination import PageNumberPagination #para implementar paginación
+from rest_framework.authentication import TokenAuthentication  # para obtener el profile correcto
+
+
 
 from .serializers import (
     LoginRequestSerializer,
@@ -285,6 +289,7 @@ def api_logout(request):
     }
 )
 @api_view(['GET', 'PUT', 'PATCH'])
+@authentication_classes([TokenAuthentication]) # Corrección: Fuerza el uso de TokenAuthentication para que request.user detecte al usuario logueado en Swagger
 @permission_classes([IsAuthenticated])
 def api_profile(request):
     """
@@ -345,19 +350,57 @@ def api_profile(request):
         }, status=status.HTTP_200_OK)
 
 
+# @extend_schema(
+#     summary="Listado de todos los usuarios",
+#     description="Retorna una lista completa de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad.",
+#     responses={200: UserDetailSerializer(many=True)}
+# )
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def api_users_list(request):
+#     """
+#     Vista que devuelve el listado de todos los usuarios registrados.
+#     Requiere autenticación por Token.
+#     """
+#     # select_related optimiza la consulta evitando problemas N+1
+#     users = User.objects.select_related('profile', 'config').all().order_by('id')
+#     serializer = UserDetailSerializer(users, many=True)
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
 @extend_schema(
     summary="Listado de todos los usuarios",
-    description="Retorna una lista completa de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad.",
-    responses={200: UserDetailSerializer(many=True)}
+    description="Retorna una lista paginada de todos los usuarios registrados, incluyendo su perfil y su configuración de accesibilidad. Devuelve 10 registros por página",
+    responses={
+        200: inline_serializer(
+            name='PaginatedUserList',
+            fields={
+                'count': serializers.IntegerField(help_text='Total number of users'),
+                'next': serializers.URLField(allow_null=True, help_text='URL of the next page of users'),
+                'previous': serializers.URLField(allow_null=True, help_text='URL of the previous page of users'),
+                'results': UserDetailSerializer(many=True)
+            }
+        )
+    }
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_users_list(request):
     """
-    Vista que devuelve el listado de todos los usuarios registrados.
+    Vista que devuelve el listado de todos los usuarios registrados con paginación.
     Requiere autenticación por Token.
     """
-    # select_related optimiza la consulta evitando problemas N+1
+    # Traemos la query optimizada de la base de datos
     users = User.objects.select_related('profile', 'config').all().order_by('id')
-    serializer = UserDetailSerializer(users, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # Instanciamos y configuramos el paginador a mano
+    paginator = PageNumberPagination()
+    paginator.page_size = 10  # Podés cambiar el 10 por el tamaño de página que prefieras
+    
+    #  Paginamos el QuerySet pasando el request
+    paginated_users = paginator.paginate_queryset(users, request)
+    
+    # Serializamos únicamente los datos de la página actual
+    serializer = UserDetailSerializer(paginated_users, many=True)
+    
+    # Retornamos la respuesta con la estructura nativa de paginación de DRF (count, next, previous, results)
+    return paginator.get_paginated_response(serializer.data)

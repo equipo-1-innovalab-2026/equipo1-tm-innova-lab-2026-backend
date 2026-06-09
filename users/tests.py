@@ -176,9 +176,11 @@ class UserEndpointsTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['username'], 'testuser')
-        self.assertEqual(response.data[1]['username'], 'anotheruser')
+        # Verificamos la estructura paginada
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['username'], 'testuser')
+        self.assertEqual(response.data['results'][1]['username'], 'anotheruser')
 
     def test_api_logout_success(self):
         url = reverse('api_logout')
