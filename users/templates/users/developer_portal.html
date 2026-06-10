@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Desarrolladores - Mentor Virtual</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         :root {
             --bg-primary: #0b0f19;
@@ -40,10 +38,14 @@
             min-height: 100vh;
             padding: 2rem 1.5rem;
             line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
+            width: 100%;
             margin: 0 auto;
         }
 
@@ -91,7 +93,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
-            margin-bottom: 4rem;
             animation: fadeInUp 0.8s ease;
         }
 
@@ -199,167 +200,6 @@
             stroke-width: 2;
         }
 
-        /* Document Reader section */
-        .doc-section {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(16px);
-            border-radius: 24px;
-            overflow: hidden;
-            animation: fadeInUp 1s ease;
-        }
-
-        .tab-bar {
-            display: flex;
-            background: rgba(15, 23, 42, 0.6);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 0 1rem;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-family: var(--font-title);
-            font-size: 1.05rem;
-            font-weight: 600;
-            padding: 1.25rem 1.5rem;
-            cursor: pointer;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-main);
-        }
-
-        .tab-btn.active {
-            color: var(--color-primary);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-            border-radius: 3px 3px 0 0;
-        }
-
-        .tab-content {
-            padding: 2.5rem;
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Markdown Rendering Styles */
-        .markdown-body {
-            color: #cbd5e1;
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-            font-family: var(--font-title);
-            color: var(--text-main);
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-
-        .markdown-body h1 { font-size: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem; }
-        .markdown-body h2 { font-size: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.3rem; }
-        .markdown-body h3 { font-size: 1.25rem; }
-
-        .markdown-body p { margin-bottom: 1.2rem; }
-
-        .markdown-body ul, .markdown-body ol {
-            margin-bottom: 1.2rem;
-            padding-left: 2rem;
-        }
-
-        .markdown-body li { margin-bottom: 0.4rem; }
-
-        .markdown-body code {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f472b6;
-            padding: 0.2rem 0.4rem;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
-
-        .markdown-body pre {
-            background: #090d16;
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 1.2rem;
-            border-radius: 12px;
-            overflow-x: auto;
-            margin-bottom: 1.5rem;
-        }
-
-        .markdown-body pre code {
-            background: none;
-            color: #e2e8f0;
-            padding: 0;
-            border-radius: 0;
-            font-size: 0.9rem;
-        }
-
-        .markdown-body table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-
-        .markdown-body th, .markdown-body td {
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0.8rem 1rem;
-            text-align: left;
-        }
-
-        .markdown-body th {
-            background-color: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .markdown-body tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.01);
-        }
-
-        /* Mermaid Graph Styles */
-        .mermaid {
-            background: #090d16;
-            padding: 2rem;
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            margin: 1.5rem 0;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* GitHub alerts style */
-        .markdown-body blockquote {
-            border-left: 4px solid var(--color-primary);
-            background: rgba(99, 102, 241, 0.08);
-            padding: 1rem 1.5rem;
-            border-radius: 0 12px 12px 0;
-            margin-bottom: 1.5rem;
-            color: #cbd5e1;
-        }
-
-        .markdown-body blockquote p {
-            margin-bottom: 0;
-        }
-
         /* Animations */
         @keyframes pulse {
             0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
@@ -375,11 +215,6 @@
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .tab-content { padding: 1.5rem; }
-            .tab-btn { padding: 1rem; font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -420,100 +255,6 @@
                 </div>
             </a>
         </section>
-
-        <!-- Dynamic Document Reader -->
-        <section class="doc-section">
-            <div class="tab-bar">
-                <button class="tab-btn active" onclick="switchTab(event, 'endpoints-tab')">Guía de Endpoints (API)</button>
-                <button class="tab-btn" onclick="switchTab(event, 'data-dict-tab')">Diccionario de Datos (BD)</button>
-            </div>
-
-            <!-- Tab Content: Endpoints Guide -->
-            <div id="endpoints-tab" class="tab-content active">
-                <div id="endpoints-markdown" class="markdown-body">
-                    <p style="color:var(--text-muted)">Cargando documentación...</p>
-                </div>
-            </div>
-
-            <!-- Tab Content: Data Dictionary -->
-            <div id="data-dict-tab" class="tab-content">
-                <div id="data-dict-markdown" class="markdown-body">
-                    <p style="color:var(--text-muted)">Cargando diccionario de datos...</p>
-                </div>
-            </div>
-        </section>
     </div>
-
-    <!-- Hidden Raw Markdown Data -->
-    <script id="endpoints-raw" type="text/markdown">{{ endpoints_markdown|safe }}</script>
-    <script id="data-dict-raw" type="text/markdown">{{ data_dict_markdown|safe }}</script>
-
-    <script>
-        // Init Mermaid
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: 'dark',
-            themeVariables: {
-                background: '#090d16',
-                primaryColor: '#6366f1',
-                lineColor: '#06b6d4',
-                textColor: '#f8fafc'
-            }
-        });
-
-        // Setup markdown compilation options
-        marked.setOptions({
-            gfm: true,
-            breaks: true
-        });
-
-        // Render Markdown content
-        function renderMarkdown() {
-            const endpointsMd = document.getElementById('endpoints-raw').textContent;
-            const dataDictMd = document.getElementById('data-dict-raw').textContent;
-
-            // Render Endpoints
-            document.getElementById('endpoints-markdown').innerHTML = marked.parse(endpointsMd);
-
-            // Render Data Dictionary
-            document.getElementById('data-dict-markdown').innerHTML = marked.parse(dataDictMd);
-
-            // Process Mermaid inside Markdown
-            document.querySelectorAll('#data-dict-markdown pre code.language-mermaid').forEach((codeBlock) => {
-                const pre = codeBlock.parentNode;
-                const div = document.createElement('div');
-                div.className = 'mermaid';
-                div.textContent = codeBlock.textContent;
-                pre.parentNode.replaceChild(div, pre);
-            });
-
-            // Initialize Mermaid graphs
-            mermaid.run().catch(err => console.log('Mermaid error:', err));
-        }
-
-        // Tab Switching Logic
-        function switchTab(evt, tabId) {
-            // Hide all contents
-            const tabContents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].classList.remove("active");
-            }
-
-            // Deactivate all buttons
-            const tabButtons = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < tabButtons.length; i++) {
-                tabButtons[i].classList.remove("active");
-            }
-
-            // Show active content and set button active
-            document.getElementById(tabId).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-
-        // Run on load
-        window.addEventListener('DOMContentLoaded', () => {
-            renderMarkdown();
-        });
-    </script>
 </body>
 </html>
