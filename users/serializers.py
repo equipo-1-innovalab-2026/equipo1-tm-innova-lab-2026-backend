@@ -70,7 +70,7 @@ class RegisterRequestSerializer(serializers.Serializer):
             'required': 'El username es un campo obligatorio.',
             'blank': 'El username es un campo obligatorio.'
         },
-        help_text="Nombre de usuario único para la nueva cuenta."
+        help_text="Nombre de usuario único para la nueva cuenta. No se permiten espacios ni caracteres especiales inválidos."
     )
     email = serializers.EmailField(
         required=True,
@@ -79,7 +79,7 @@ class RegisterRequestSerializer(serializers.Serializer):
             'blank': 'El email es un campo obligatorio.',
             'invalid': 'Introduzca una dirección de correo electrónico válida.'
         },
-        help_text="Dirección de correo electrónico única."
+        help_text="Dirección de correo electrónico única con formato válido (ej. usuario@dominio.com)."
     )
     password = serializers.CharField(
         required=True, 
@@ -88,7 +88,7 @@ class RegisterRequestSerializer(serializers.Serializer):
             'required': 'El password es un campo obligatorio.',
             'blank': 'El password es un campo obligatorio.'
         },
-        help_text="Contraseña para la nueva cuenta (se cifrará antes de almacenar)."
+        help_text="Contraseña para la nueva cuenta (mínimo 8 caracteres, al menos una mayúscula, un número y un carácter especial)."
     )
     password_confirm = serializers.CharField(
         required=True,
