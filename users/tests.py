@@ -10,7 +10,7 @@ class UserEndpointsTestCase(APITestCase):
         # Crear un usuario de prueba inicial
         self.user = User.objects.create_user(
             username='testuser',
-            password='testpassword123',
+            password='testpassword123!',
             email='testuser@example.com'
         )
         # Configurar perfil y config del usuario (creados por las señales)
@@ -30,8 +30,8 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_register')
         data = {
             'username': 'newuser',
-            'password': 'Newpassword123',
-            'password_confirm': 'Newpassword123',
+            'password': 'Newpassword123!',
+            'password_confirm': 'Newpassword123!',
             'email': 'newuser@example.com',
             'phone': '987654321',
             'avatar_url': 'http://example.com/new_avatar.jpg',
@@ -51,8 +51,8 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_register')
         data = {
             'username': 'newuser',
-            'password': 'Newpassword123',
-            'password_confirm': 'Differentpassword123',
+            'password': 'Newpassword123!',
+            'password_confirm': 'Differentpassword123!',
             'email': 'newuser@example.com'
         }
         response = self.client.post(url, data, format='json')
@@ -75,8 +75,8 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_register')
         data = {
             'username': 'newuser',
-            'password': 'Newpassword123',
-            'password_confirm': 'Newpassword123',
+            'password': 'Newpassword123!',
+            'password_confirm': 'Newpassword123!',
             'email': 'testuser@example.com'  # Ya registrado en setUp
         }
         response = self.client.post(url, data, format='json')
@@ -97,7 +97,7 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_login')
         data = {
             'email': 'testuser@example.com',
-            'password': 'testpassword123'
+            'password': 'testpassword123!'
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -108,7 +108,7 @@ class UserEndpointsTestCase(APITestCase):
         url = reverse('api_login')
         data = {
             'email': 'testuser@example.com',
-            'password': 'wrongpassword'
+            'password': 'wrongpassword!'
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
